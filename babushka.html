@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <!-- <link rel="stylesheet" href="babushka.css" /> -->
+    <!-- <link rel="stylesheet" href="style.css" /> -->
+    <style>
+      header {
+        font-family: "Rowdies", cursive;
+        max-width: 100%;
+        font-size: clamp(1rem, 2.5vw, 2rem);
+        text-align: left;
+      }
+      section {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+        grid-column-gap: 0px;
+        grid-row-gap: 0px;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      }
+      img {
+        max-width: 100%;
+      }
+      .container {
+        height: 200px;
+        position: relative;
+      }
+
+      .center {
+        margin: 0;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        -ms-transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%);
+      }
+      button {
+        background-color: white;
+        color: black;
+        padding: 16px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        transition-duration: 0.4s;
+        cursor: pointer;
+        border: 2px solid #f27405;
+        /* transition-duration: 0.4s; */
+      }
+
+      button:hover {
+        background-color: #f27405;
+      }
+
+      button:focus {
+        background-color: F27405;
+      }
+
+      .pris {
+        font-family: "Rowdies";
+        font-weight: bold;
+      }
+
+      #modal {
+        display: none;
+        width: 100vw;
+        height: 100vw;
+        position: fixed;
+        background-color: black;
+        top: 0;
+        left: 0;
+      }
+
+      #modal article {
+        max-width: 800px;
+        margin: 2em auto;
+        background-color: white;
+      }
+
+      footer {
+        font-family: "Freehand", cursive;
+        background-color: #f27405;
+        text-align: center;
+        font-size: small;
+      }
+/* Indsat fra Laura */
+
+@media (max-width: 650px) {
+        button {
+          display: flex;
+          background-color: white;
+          transition-duration: 0.5s;
+          margin: 1rem;
+          padding: 0.2rem;
+          font-size: 1rem;
+          min-width: 115px;
+          text-align: center;
+        }
+
+        button:hover {
+          background-color: rgb(226, 199, 199);
+        }
+        header h1 {
+          display: flex;
+          font-family: "Notable", sans-serif;
+          color: black;
+          text-align: center;
+          font-size: 3rem;
+        }
+        h2 {
+          margin-left: 2rem;
+        }
+        p {
+          margin-left: 2rem;
+        }
+        img {
+          margin-left: 2rem;
+        }
+      }
+      @media (min-width: 1000px) {
+        h2 {
+          margin-left: 4rem;
+        }
+        p {
+          margin-left: 4rem;
+        }
+        img {
+          margin-left: 4rem;
+        }
+      } ;
+    </style>
+  </head>
+  <header>
+    <div class="headercontainer">
+      <div class="logo">
+        <a href="forside.html"
+          ><img src="bistrobabushka.svg" alt="logo" width="300"
+        /></a>
+    <img src="" alt="" />
+    <nav>
+      <div class="container">
+        <div class="center">
+          <button data-kategori="alle" class="valgt">Alle</button>
+          <button data-kategori="forretter">Forretter</button>
+          <button data-kategori="hovedretter">Hovederetter</button>
+          <button data-kategori="desserter">Desserter</button>
+          <button data-kategori="drikkevarer">Drikkevarer</button>
+        </div>
+      </div>
+    </nav>
+  </header>
+  <body>
+    <aside id="modal">
+      <article>
+        <h2 class="navn"></h2>
+        <h2 class="efternavn"></h2>
+        <img src="" alt="" class="profil-billede" />
+        <p class="kortbeskrivelse"></p>
+        <p class="pris"></p>
+      </article>
+    </aside>
+    <section id="liste">
+      <template>
+        <article>
+          <h2 class="navn"></h2>
+          <h2 class="efternavn"></h2>
+          <img src="" alt="" class="profil-billede" />
+          <p class="email"></p>
+          <p class="pris"></p>
+        </article>
+      </template>
+    </section>
+    <script>
+      const header = document.querySelector("header h1");
+      const myHeaders = {
+        "x-apikey": "600ec2fb1346a1524ff12de4",
+      };
+
+      document.addEventListener("DOMContentLoaded", start);
+      // console.log("Line Berner");
+      let retter;
+      let filter = "alle";
+      function start() {
+        const filterknapper = document.querySelectorAll("nav button");
+        filterknapper.forEach((knap) =>
+          knap.addEventListener("click", filtrerRetter)
+        );
+        loadJSON();
+      }
+      function filtrerRetter() {
+        filter = this.dataset.kategori;
+        visRetter();
+      }
+
+      async function loadJSON() {
+        console.log("tekst");
+        const JSONdata = await fetch(
+          "https://babushka-dd8a.restdb.io/rest/menu",
+          { headers: myHeaders }
+        );
+        retter = await JSONdata.json();
+        console.log("Retter", retter);
+        visRetter();
+      }
+      //   function vis(json) {
+      //     console.log(json);
+      //   }
+
+      const dest = document.querySelector("#liste");
+      const skabelon = document.querySelector("template").content;
+
+      function visRetter() {
+        dest.textContent = "";
+        retter.forEach((ret) => {
+          console.log("kategori", ret.kategori);
+          if (filter == ret.kategori || filter == "alle") {
+            const klon = skabelon.cloneNode(true);
+            klon.querySelector(".navn").textContent = ret.navn;
+            // klon.querySelector("h2").textContent += enPerson.efternavn;
+            // klon.querySelector(".email").textContent = enPerson.email;
+            klon.querySelector(".profil-billede").src =
+              ret.billednavn + "-md.jpg";
+            klon.querySelector("p").textContent = ret.kortbeskrivelse;
+            klon.querySelector(".pris").textContent = ret.pris + ",-";
+            klon
+              .querySelector("article")
+              .addEventListener("click", () => visDetaljer(ret));
+            dest.appendChild(klon);
+          }
+        });
+      }
+
+      // Modal
+
+      const container = document.querySelector("section");
+      const modal = document.querySelector("#modal");
+
+      function visDetaljer(ret) {
+        console.log(ret);
+        modal.querySelector("h2").textContent = ret.navn;
+        modal.querySelector(".profil-billede").src = ret.billednavn + "-md.jpg";
+        modal.querySelector("p").textContent = ret.langbeskrivelse;
+        modal.style.display = "block";
+      }
+
+      modal.addEventListener("click", () => (modal.style.display = "none"));
+    </script>
+  </body>
+  <footer>
+    <h2>From Rusia with love <3</h2>
+    <div>
+      <a href="https://www.facebook.com/casperchristensen.dk/">
+        <img src="fbwhite.png" alt="Facebook" width="18" />
+      </a>
+      <a href="https://www.instagram.com/">
+        <img src="igwhite.png" alt="Instagram" width="18" />
+      </a>
+      <a href="https://www.linkedin.com/in/casper-christensen-65621182/">
+        <img src="liwhite.png" alt="linkedin" width="18" />
+      </a>
+    </div>
+  </footer>
+</html>
